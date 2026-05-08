@@ -1,0 +1,232 @@
+[
+    {
+        "code":  "ALC",
+        "name_en":  "Alarm Clock",
+        "name_th":  "นาฬิกาจับเวลา"
+    },
+    {
+        "code":  "AMG",
+        "name_en":  "Amalgamator",
+        "name_th":  "เครื่องผสมสารอุดฟัน"
+    },
+    {
+        "code":  "ANES",
+        "name_en":  "Gas indicator machine",
+        "name_th":  "เครื่องให้สารสลบ"
+    },
+    {
+        "code":  "BBR",
+        "name_en":  "Blood Bank",
+        "name_th":  "ตู้เย็นเก็บเลือด"
+    },
+    {
+        "code":  "BPA",
+        "name_en":  "Blood pressure Analog",
+        "name_th":  "เครื่องวัดความดันโลหิต แบบอนาล๊อก"
+    },
+    {
+        "code":  "BPD",
+        "name_en":  "Blood pressure Digital",
+        "name_th":  "เครื่องวัดความดันโลหิต แบบดิจิตอล"
+    },
+    {
+        "code":  "CEN",
+        "name_en":  "Centrifuge",
+        "name_th":  "เครื่องปั่นปัสสาวะ"
+    },
+    {
+        "code":  "DEF",
+        "name_en":  "Defibrillator",
+        "name_th":  "เครื่องกระตุกหัวใจ"
+    },
+    {
+        "code":  "DPT",
+        "name_en":  "Doptone",
+        "name_th":  "เครื่องฟังการเต้นของหัวใจเด็กทารกในครรภ์"
+    },
+    {
+        "code":  "DRB",
+        "name_en":  "Dry Bath",
+        "name_th":  "เครื่องควบคุมอุณหภูมิ แบบแห้ง"
+    },
+    {
+        "code":  "EKG",
+        "name_en":  "EKG Recorder",
+        "name_th":  "เครื่องวัดคลื่นไฟฟ้ากล้ามเนื้อหัวใจ"
+    },
+    {
+        "code":  "ESU",
+        "name_en":  "Electro surgical",
+        "name_th":  "เครื่องจี้ตัดด้วยไฟฟ้า"
+    },
+    {
+        "code":  "FLP",
+        "name_en":  "Flow Meter Pipeline",
+        "name_th":  "เครื่องควบคุมการไหลของก๊าซ แบบไปป์ไลน์"
+    },
+    {
+        "code":  "FLT",
+        "name_en":  "Flow Meter Tank",
+        "name_th":  "เครื่องควบคุมการไหลของก๊าซ"
+    },
+    {
+        "code":  "FMT",
+        "name_en":  "Fetal Monitor",
+        "name_th":  "เครื่องติดตามการทำงานของร่างกายทารกในครรภ์"
+    },
+    {
+        "code":  "FZE",
+        "name_en":  "Freezer Bank",
+        "name_th":  "ตู้เย็นเก็บพลาสมา"
+    },
+    {
+        "code":  "HEM",
+        "name_en":  "Hematocrit",
+        "name_th":  "เครื่องปั่นเม็ดเลือด"
+    },
+    {
+        "code":  "HHU",
+        "name_en":  "Hipo-Hiperthermia Unit",
+        "name_th":  "เครื่องไฮโป-ไฮเปอร์เธอร์เมีย"
+    },
+    {
+        "code":  "IFI",
+        "name_en":  "Infant incubator",
+        "name_th":  "ตู้อบเด็ก"
+    },
+    {
+        "code":  "IFW",
+        "name_en":  "Infant Warmer",
+        "name_th":  "เครื่องให้ความอบอุ่นแก่เด็ก ชนิดวอร์มเมอร์"
+    },
+    {
+        "code":  "INC",
+        "name_en":  "Incubator",
+        "name_th":  "เครื่องควบคุมอุณหภูมิเพาะเชื้อ"
+    },
+    {
+        "code":  "INP",
+        "name_en":  "Infusion pump",
+        "name_th":  "เครื่องวัดอัตราการไหลของสารละลาย"
+    },
+    {
+        "code":  "MPT",
+        "name_en":  "Patient  monitor",
+        "name_th":  "เครื่องติดตามสัญญาณชีพผู้ป่วย"
+    },
+    {
+        "code":  "PAC",
+        "name_en":  "Pacer",
+        "name_th":  "เครื่องกระตุ้นหัวใจ"
+    },
+    {
+        "code":  "PUO",
+        "name_en":  "Puls Oximeter",
+        "name_th":  "เครื่องวัดความอิ่มตัวของออกซิเจนในเลือด"
+    },
+    {
+        "code":  "PHT",
+        "name_en":  "Pack heater",
+        "name_th":  "หม้อต้มแพคความร้อน"
+    },
+    {
+        "code":  "PRB",
+        "name_en":  "Parafine  Bath",
+        "name_th":  "หม้อต้มพาราฟีน"
+    },
+    {
+        "code":  "RTT",
+        "name_en":  "Rotator",
+        "name_th":  "เครื่องหมุนส่ายสำหรับผสมของเหลว"
+    },
+    {
+        "code":  "SER",
+        "name_en":  "Serofuge",
+        "name_th":  "เครื่องปั่นของเหลว"
+    },
+    {
+        "code":  "SUC",
+        "name_en":  "Suction",
+        "name_th":  "เครื่องดูดของเหลว"
+    },
+    {
+        "code":  "SUD",
+        "name_en":  "Drainage Suction",
+        "name_th":  "เครื่องดูดของเหลวในกระเพาะอาหาร"
+    },
+    {
+        "code":  "SUP",
+        "name_en":  "Suction Pipeline",
+        "name_th":  "เครื่องดูดของเหลว ระบบไปป์ไลน์"
+    },
+    {
+        "code":  "TMA",
+        "name_en":  "(Ambient Thermometer)",
+        "name_th":  "เทอร์โมมิเตอร์วัดในห้องทำงาน"
+    },
+    {
+        "code":  "TMG",
+        "name_en":  "(General Thermometer)",
+        "name_th":  "เทอร์โมมิเตอร์วัดอุณหภูมิทั่วไป"
+    },
+    {
+        "code":  "TMP",
+        "name_en":  "(Patient Thermometer)",
+        "name_th":  "เทอร์โมมิเตอร์วัดอุณหภูมิคนไข้"
+    },
+    {
+        "code":  "TMR",
+        "name_en":  "(Refrigerator Thermometer)",
+        "name_th":  "เทอร์โมมิเตอร์วัดอุณหภูมิภายในตู้เย็น"
+    },
+    {
+        "code":  "TRAC",
+        "name_en":  "Traction",
+        "name_th":  "เครื่องดึงหลัง ดึงคอ"
+    },
+    {
+        "code":  "ULT",
+        "name_en":  "Ultrasound",
+        "name_th":  "เครื่องตรวจอวัยวะภายในด้วยคลื่นความถี่สูง"
+    },
+    {
+        "code":  "UST",
+        "name_en":  "Ultrasound Therapeutic",
+        "name_th":  "เครื่องให้การบำบัดด้วยคลื่นอัลตร้าซาวด์"
+    },
+    {
+        "code":  "VAC",
+        "name_en":  "Vacuum",
+        "name_th":  "เครื่องดูดช่วยคลอด"
+    },
+    {
+        "code":  "VEN",
+        "name_en":  "Ventilator",
+        "name_th":  "เครื่องช่วยหายใจ"
+    },
+    {
+        "code":  "WAB",
+        "name_en":  "Analytical Balance",
+        "name_th":  "เครื่องชั่งสาร"
+    },
+    {
+        "code":  "WEA",
+        "name_en":  "Weighting Machine (Adult)",
+        "name_th":  "เครื่องชั่งน้ำหนักผู้ใหญ่"
+    },
+    {
+        "code":  "WEB",
+        "name_en":  "Weighting Machine (Neo)",
+        "name_th":  "เครื่องชั่งน้ำหนักเด็ก"
+    },
+    {
+        "code":  "WEG",
+        "name_en":  "Weighting Machine (General)",
+        "name_th":  "เครื่องชั่งน้ำหนักผู้ใหญ่"
+    },
+    {
+        "code":  "WTB",
+        "name_en":  "Water Bath",
+        "name_th":  "เครื่องควบคุมอุณหภูมิ  แบบน้ำ"
+    }
+]

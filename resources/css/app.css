@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../**/*.vue';
+
+/* HR-CENTER 4.0 inspired tokens for CK-MEMS */
+@theme {
+    --font-sans: 'IBM Plex Sans Thai', 'Sarabun', ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-brand-50: #eff6ff;
+    --color-brand-100: #dbeafe;
+    --color-brand-500: #3b82f6;
+    --color-brand-600: #2563eb;
+    --color-brand-700: #1d4ed8;
+
+    --color-pastel-blue: #dbeafe;
+    --color-pastel-green: #d1fae5;
+    --color-pastel-red: #fee2e2;
+    --color-pastel-orange: #fed7aa;
+    --color-pastel-purple: #e9d5ff;
+    --color-pastel-indigo: #e0e7ff;
+    --color-pastel-yellow: #fef3c7;
+}
+
+html, body {
+    font-family: var(--font-sans);
+    background-color: #f8fafc;
+}
+
+/* Sidebar scrollbar refinement */
+.sidebar-scroll::-webkit-scrollbar { width: 4px; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 2px; }
+.sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+
+/* Card style helper */
+.card-base {
+    @apply bg-white rounded-2xl shadow-sm ring-1 ring-slate-100;
+}

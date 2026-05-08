@@ -1,0 +1,180 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreRepairTicketRequest;
+use App\Http\Requests\TransitionRepairRequest;
+use App\Http\Resources\RepairTicketResource;
+use App\Models\Equipment;
+use App\Models\FlexMessageTemplate;
+use App\Models\RepairTicket;
+use App\Services\MophAlertService;
+use App\Services\RepairWorkflowService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+
+class RepairController extends Controller
+{
+    public function __construct(private readonly RepairWorkflowService $workflow)
+    {
+    }
+
+    public function index(Request $request): AnonymousResourceCollection
+    {
+        $user = $request->user();
+        $query = RepairTicket::with([
+            'equipment.department:id,code,name_th',
+            'location:id,name',
+            'reporter:id,name,full_name,department_id',
+            'assignee:id,name,full_name',
+        ])->where('hospital_id', $user->hospital_id);
+
+        // "user" role can only see their own tickets
+        if ($user->hasRole('user') && ! $user->hasAnyRole(['admin', 'staff'])) {
+            $query->where('reported_by', $user->id);
+        }
+
+        if ($request->filled('status')) {
+            $statuses = explode(',', $request->string('status'));
+            $query->whereIn('status', $statuses);
+        }
+        if ($request->filled('urgency')) {
+            $query->where('urgency', $request->string('urgency'));
+        }
+        if ($request->filled('equipment_id')) {
+            $query->where('equipment_id', $request->integer('equipment_id'));
+        }
+        if ($request->filled('search')) {
+            $term = '%'.$request->string('search').'%';
+            $query->where(function ($q) use ($term) {
+                $q->where('ticket_no', 'like', $term)
+                  ->orWhere('symptom', 'like', $term)
+                  ->orWhereHas('equipment', fn ($eq) => $eq
+                      ->where('id_code', 'like', $term)
+                      ->orWhere('name_th', 'like', $term));
+            });
+        }
+
+        $sort = $request->string('sort', 'reported_at')->value();
+        $dir = $request->string('dir', 'desc')->value() === 'asc' ? 'asc' : 'desc';
+        if (in_array($sort, ['reported_at', 'ticket_no', 'urgency', 'status', 'created_at'])) {
+            $query->orderBy($sort, $dir);
+        }
+
+        $perPage = min($request->integer('per_page', 25), 100);
+
+        return RepairTicketResource::collection($query->paginate($perPage));
+    }
+
+    public function show(RepairTicket $ticket, Request $request): RepairTicketResource
+    {
+        abort_if($ticket->hospital_id !== $request->user()->hospital_id, 404);
+
+        $ticket->load([
+            'equipment.department',
+            'location',
+            'reporter:id,name,full_name,department_id',
+            'assignee:id,name,full_name',
+            'progressLogs.user:id,name,full_name',
+        ]);
+
+        return new RepairTicketResource($ticket);
+    }
+
+    public function store(StoreRepairTicketRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $data = $request->validated();
+
+        $equipment = Equipment::where('hospital_id', $user->hospital_id)
+            ->findOrFail($data['equipment_id']);
+
+        $ticket = RepairTicket::create([
+            'hospital_id' => $user->hospital_id,
+            'ticket_no' => $this->workflow->generateTicketNumber($user->hospital_id),
+            'equipment_id' => $equipment->id,
+            'location_id' => $data['location_id'] ?? $equipment->location_id,
+            'reported_at' => $data['reported_at'],
+            'reported_by' => $user->id,
+            'symptom' => $data['symptom'],
+            'urgency' => $data['urgency'],
+            'status' => RepairTicket::STATUS_PENDING,
+        ]);
+
+        // Initial log
+        $ticket->progressLogs()->create([
+            'from_status' => null,
+            'to_status' => RepairTicket::STATUS_PENDING,
+            'note' => 'แจ้งซ่อมโดย '.($user->full_name ?? $user->name),
+            'changed_by' => $user->id,
+            'changed_at' => now(),
+        ]);
+
+        $this->workflow->syncEquipmentStatus($ticket);
+
+        $ticket->load(['equipment.department', 'location', 'reporter', 'progressLogs.user']);
+
+        app(MophAlertService::class)->notify(
+            $user->hospital,
+            FlexMessageTemplate::KEY_REPAIR_REQUEST,
+            app(MophAlertService::class)->buildRepairVariables($ticket),
+            'repair.requested:'.$ticket->id,
+        );
+
+        return response()->json(new RepairTicketResource($ticket), 201);
+    }
+
+    public function transition(TransitionRepairRequest $request, RepairTicket $ticket): RepairTicketResource
+    {
+        abort_if($ticket->hospital_id !== $request->user()->hospital_id, 404);
+
+        $data = $request->validated();
+        $extra = [];
+        foreach (['assigned_to', 'root_cause', 'action_taken', 'parts_used', 'repair_cost'] as $k) {
+            if (array_key_exists($k, $data)) $extra[$k] = $data[$k];
+        }
+
+        $updated = $this->workflow->transition(
+            $ticket,
+            $data['to_status'],
+            $request->user(),
+            $data['note'] ?? null,
+            $extra,
+        );
+        $updated->load(['equipment.department', 'location', 'reporter', 'assignee', 'progressLogs.user']);
+
+        $tplMap = [
+            RepairTicket::STATUS_ACKNOWLEDGED => FlexMessageTemplate::KEY_REPAIR_ACKNOWLEDGED,
+            RepairTicket::STATUS_IN_PROGRESS => FlexMessageTemplate::KEY_REPAIR_IN_PROGRESS,
+            RepairTicket::STATUS_REPAIRED => FlexMessageTemplate::KEY_REPAIR_COMPLETED,
+        ];
+        if (isset($tplMap[$updated->status])) {
+            app(MophAlertService::class)->notify(
+                $request->user()->hospital,
+                $tplMap[$updated->status],
+                app(MophAlertService::class)->buildRepairVariables($updated),
+                'repair.transition:'.$updated->id.':'.$updated->status,
+            );
+        }
+
+        return new RepairTicketResource($updated);
+    }
+
+    public function summary(Request $request): JsonResponse
+    {
+        $hospitalId = $request->user()->hospital_id;
+        $byStatus = RepairTicket::where('hospital_id', $hospitalId)
+            ->selectRaw('status, COUNT(*) as cnt')
+            ->groupBy('status')
+            ->pluck('cnt', 'status');
+
+        return response()->json([
+            'total' => RepairTicket::where('hospital_id', $hospitalId)->count(),
+            'by_status' => $byStatus,
+            'open' => collect(RepairWorkflowService::ACTIVE_STATUSES)
+                ->sum(fn ($s) => (int) ($byStatus->get($s) ?? 0)),
+        ]);
+    }
+}

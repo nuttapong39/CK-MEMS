@@ -1,0 +1,77 @@
+[
+    {
+        "code":  "DT",
+        "sort_order":  1,
+        "name_th":  "งานทันตสาธารณสุข"
+    },
+    {
+        "code":  "ER",
+        "sort_order":  2,
+        "name_th":  "งานอุบัติเหตุ/ฉุกเฉิน"
+    },
+    {
+        "code":  "HP",
+        "sort_order":  3,
+        "name_th":  "งานส่งเสริมสุขภาพ"
+    },
+    {
+        "code":  "IC",
+        "sort_order":  4,
+        "name_th":  "งานซักฟอก"
+    },
+    {
+        "code":  "LAB",
+        "sort_order":  5,
+        "name_th":  "งานชันสูตรสาธารณสุข"
+    },
+    {
+        "code":  "LR",
+        "sort_order":  6,
+        "name_th":  "งานสูติกรรม"
+    },
+    {
+        "code":  "MM",
+        "sort_order":  7,
+        "name_th":  "งานซ่อมบำรุงและอาคารสถานที่"
+    },
+    {
+        "code":  "NCD",
+        "sort_order":  8,
+        "name_th":  "งานผู้ป่วยเรื้อรัง"
+    },
+    {
+        "code":  "OPD",
+        "sort_order":  9,
+        "name_th":  "งานผู้ป่วยนอก"
+    },
+    {
+        "code":  "OR",
+        "sort_order":  10,
+        "name_th":  "งานผ่าตัด คลอด"
+    },
+    {
+        "code":  "PT",
+        "sort_order":  11,
+        "name_th":  "งานกายภาพบำบัด"
+    },
+    {
+        "code":  "SP",
+        "sort_order":  12,
+        "name_th":  "งานจ่ายกลาง"
+    },
+    {
+        "code":  "TM",
+        "sort_order":  13,
+        "name_th":  "งานแพทย์แผนไทย"
+    },
+    {
+        "code":  "WA",
+        "sort_order":  14,
+        "name_th":  "งานผู้ป่วยใน"
+    },
+    {
+        "code":  "XR",
+        "sort_order":  15,
+        "name_th":  "งานรังสีวินิจฉัย"
+    }
+]
