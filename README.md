@@ -30,6 +30,10 @@
 
 ## 🚀 Setup
 
+> 📘 **มือใหม่ที่ยังไม่เคยใช้ Laravel/Vue?** อ่าน [**คู่มือติดตั้งฉบับสมบูรณ์ (INSTALL.md)**](INSTALL.md) ที่อธิบายทุกขั้นตอนตั้งแต่ติดตั้ง XAMPP/Composer/Node.js — รวม troubleshooting
+
+**ติดตั้งแบบเร็ว (สำหรับคนที่มี dev environment พร้อมแล้ว):**
+
 ```bash
 # 1. Clone & install
 git clone https://github.com/nuttapong39/CK-MEMS.git
