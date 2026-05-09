@@ -14,15 +14,18 @@ class AuthController extends Controller
 {
     public function login(Request $request): JsonResponse
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
+        $data = $request->validate([
+            'username' => ['required', 'string'],
             'password' => ['required', 'string', 'min:4'],
         ]);
 
-        $token = Auth::guard('api')->attempt($credentials);
+        // Support login by username (name field) or email
+        $field = filter_var($data['username'], FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
+        $token = Auth::guard('api')->attempt([$field => $data['username'], 'password' => $data['password']]);
+
         if (! $token) {
             throw ValidationException::withMessages([
-                'email' => __('auth.failed'),
+                'username' => __('auth.failed'),
             ]);
         }
 
@@ -31,7 +34,7 @@ class AuthController extends Controller
         if (! $user->is_active) {
             Auth::guard('api')->logout();
             throw ValidationException::withMessages([
-                'email' => 'บัญชีนี้ถูกระงับการใช้งาน',
+                'username' => 'บัญชีนี้ถูกระงับการใช้งาน',
             ]);
         }
 
@@ -65,6 +68,42 @@ class AuthController extends Controller
             'roles' => $user->getRoleNames(),
             'permissions' => $user->getAllPermissions()->pluck('name'),
         ]);
+    }
+
+    /** Step 1: verify emergency code (no auth) */
+    public function emergencyVerify(Request $request): JsonResponse
+    {
+        $data = $request->validate(['emergency_code' => ['required', 'string']]);
+
+        $valid = env('EMERGENCY_RESET_CODE', 'CK-MEMS-RESET-2024');
+        if ($data['emergency_code'] !== $valid) {
+            return response()->json(['message' => 'รหัสฉุกเฉินไม่ถูกต้อง'], 422);
+        }
+
+        return response()->json(['ok' => true]);
+    }
+
+    /** Step 2: reset admin password (no auth — guarded by emergency code) */
+    public function emergencyReset(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'emergency_code' => ['required', 'string'],
+            'new_password'   => ['required', 'string', 'min:6'],
+        ]);
+
+        $valid = env('EMERGENCY_RESET_CODE', 'CK-MEMS-RESET-2024');
+        if ($data['emergency_code'] !== $valid) {
+            return response()->json(['message' => 'รหัสฉุกเฉินไม่ถูกต้อง'], 422);
+        }
+
+        // Reset the first admin user
+        $admin = User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))
+            ->orderBy('id')
+            ->firstOrFail();
+
+        $admin->forceFill(['password' => bcrypt($data['new_password'])])->save();
+
+        return response()->json(['message' => 'รีเซ็ตรหัสผ่านสำเร็จ', 'username' => $admin->name]);
     }
 
     private function respondWithToken(string $token, User $user): JsonResponse

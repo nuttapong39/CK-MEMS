@@ -6,4 +6,5 @@ export const repairsApi = {
     store: (data) => client.post('/repairs', data),
     transition: (id, data) => client.post(`/repairs/${id}/transition`, data),
     summary: () => client.get('/repairs/summary'),
+    nextOutsourceRef: () => client.get('/repairs/next-outsource-ref'),
 };

@@ -53,11 +53,11 @@ export const useAuthStore = defineStore('auth', {
             );
         },
 
-        async login(email, password) {
+        async login(username, password) {
             this.loading = true;
             this.error = null;
             try {
-                const { data } = await client.post('/auth/login', { email, password });
+                const { data } = await client.post('/auth/login', { username, password });
                 this.token = data.access_token;
                 this.user = data.user;
                 this.roles = data.roles;
@@ -67,8 +67,8 @@ export const useAuthStore = defineStore('auth', {
                 return true;
             } catch (e) {
                 this.error = e.response?.data?.message
-                    || e.response?.data?.errors?.email?.[0]
-                    || 'เข้าสู่ระบบไม่สำเร็จ';
+                    || e.response?.data?.errors?.username?.[0]
+                    || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
                 return false;
             } finally {
                 this.loading = false;

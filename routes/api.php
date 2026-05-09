@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\SystemSettingsController;
 use App\Http\Controllers\Api\V1\CalibrationController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\EquipmentController;
@@ -16,6 +17,9 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     // Public
     Route::post('auth/login', [AuthController::class, 'login']);
+    Route::get('system/public', [SystemSettingsController::class, 'public']);
+    Route::post('auth/emergency-reset/verify', [AuthController::class, 'emergencyVerify']);
+    Route::post('auth/emergency-reset', [AuthController::class, 'emergencyReset']);
 
     // Provider ID OAuth (stub — real handshake wired when MOPH PID docs arrive)
     Route::prefix('auth/provider-id')->group(function () {
@@ -54,6 +58,7 @@ Route::prefix('v1')->group(function () {
         // Repair tickets
         Route::prefix('repairs')->group(function () {
             Route::get('summary', [RepairController::class, 'summary']);
+            Route::get('next-outsource-ref', [RepairController::class, 'nextOutsourceRef']);
             Route::get('/', [RepairController::class, 'index']);
             Route::post('/', [RepairController::class, 'store']);
             Route::get('{ticket}', [RepairController::class, 'show']);
@@ -85,6 +90,13 @@ Route::prefix('v1')->group(function () {
             Route::delete('templates/{template}', [QrCodeController::class, 'destroyTemplate']);
             Route::post('batch-pdf', [QrCodeController::class, 'batchPdf']);
             Route::get('{equipment}/png', [QrCodeController::class, 'png']);
+        });
+
+        // System settings (admin only)
+        Route::prefix('system')->middleware('role:admin')->group(function () {
+            Route::get('settings', [SystemSettingsController::class, 'show']);
+            Route::put('settings', [SystemSettingsController::class, 'update']);
+            Route::post('settings/logo', [SystemSettingsController::class, 'uploadLogo']);
         });
 
         // User management (admin only)

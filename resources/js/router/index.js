@@ -9,6 +9,12 @@ const routes = [
         meta: { layout: 'auth', guestOnly: true },
     },
     {
+        path: '/reset-password',
+        name: 'reset-password',
+        component: () => import('../pages/auth/ResetPassword.vue'),
+        meta: { layout: 'auth' },
+    },
+    {
         path: '/',
         component: () => import('../layouts/AppLayout.vue'),
         meta: { requiresAuth: true },
@@ -57,6 +63,18 @@ const routes = [
                 meta: { title: 'รายละเอียดการซ่อม' },
             },
             {
+                path: 'repair/outsourced',
+                name: 'repair.outsourced',
+                component: () => import('../pages/repair/OutsourcedList.vue'),
+                meta: { title: 'ส่งซ่อมภายนอก', roles: ['admin', 'staff'] },
+            },
+            {
+                path: 'repair/:id/process',
+                name: 'repair.process',
+                component: () => import('../pages/repair/RepairProcess.vue'),
+                meta: { title: 'จัดการซ่อม', roles: ['admin', 'staff'] },
+            },
+            {
                 path: 'qrcode',
                 name: 'qrcode.designer',
                 component: () => import('../pages/qrcode/QrDesigner.vue'),
@@ -73,6 +91,12 @@ const routes = [
                 name: 'users.list',
                 component: () => import('../pages/admin/UserManagement.vue'),
                 meta: { title: 'จัดการผู้ใช้', roles: ['admin'] },
+            },
+            {
+                path: 'system/settings',
+                name: 'system.settings',
+                component: () => import('../pages/admin/SystemSettings.vue'),
+                meta: { title: 'ตั้งค่าระบบ', roles: ['admin'] },
             },
             {
                 path: 'moph/settings',

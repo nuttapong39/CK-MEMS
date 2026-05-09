@@ -11,21 +11,29 @@ class RepairTicketResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'ticket_no' => $this->ticket_no,
+            'id'          => $this->id,
+            'ticket_no'   => $this->ticket_no,
             'reported_at' => $this->reported_at,
-            'status' => $this->status,
-            'urgency' => $this->urgency,
-            'symptom' => $this->symptom,
-            'root_cause' => $this->root_cause,
+            'sla_due_at'  => $this->sla_due_at,
+            'status'      => $this->status,
+            'urgency'     => $this->urgency,
+            'symptom'     => $this->symptom,
+            'root_cause'  => $this->root_cause,
             'action_taken' => $this->action_taken,
-            'parts_used' => $this->parts_used,
-            'repair_cost' => $this->repair_cost,
+            'parts_used'   => $this->parts_used,
+            'repair_cost'  => $this->repair_cost,
+            'vendor_name'        => $this->vendor_name,
+            'outsource_ref'      => $this->outsource_ref,
+            'outsourced_at'      => $this->outsourced_at,
+            'expected_return_at' => $this->expected_return_at,
             'acknowledged_at' => $this->acknowledged_at,
-            'started_at' => $this->started_at,
-            'completed_at' => $this->completed_at,
-            'closed_at' => $this->closed_at,
-            'next_statuses' => app(RepairWorkflowService::class)->nextStatuses($this->resource),
+            'started_at'      => $this->started_at,
+            'completed_at'    => $this->completed_at,
+            'verified_at'     => $this->verified_at,
+            'closed_at'       => $this->closed_at,
+            'sla_overdue'     => $this->sla_due_at && now()->gt($this->sla_due_at)
+                                    && ! in_array($this->status, ['CLOSED', 'CANCELLED']),
+            'next_statuses'   => app(RepairWorkflowService::class)->nextStatuses($this->resource),
             'equipment' => $this->whenLoaded('equipment', fn () => $this->equipment ? [
                 'id' => $this->equipment->id,
                 'id_code' => $this->equipment->id_code,
@@ -50,6 +58,10 @@ class RepairTicketResource extends JsonResource
             'assignee' => $this->whenLoaded('assignee', fn () => $this->assignee ? [
                 'id' => $this->assignee->id,
                 'full_name' => $this->assignee->full_name ?? $this->assignee->name,
+            ] : null),
+            'verifier' => $this->whenLoaded('verifier', fn () => $this->verifier ? [
+                'id' => $this->verifier->id,
+                'full_name' => $this->verifier->full_name ?? $this->verifier->name,
             ] : null),
             'progress_logs' => $this->whenLoaded('progressLogs', fn () => $this->progressLogs->map(fn ($log) => [
                 'id' => $log->id,

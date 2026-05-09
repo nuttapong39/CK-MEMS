@@ -77,6 +77,7 @@ class RepairController extends Controller
             'location',
             'reporter:id,name,full_name,department_id',
             'assignee:id,name,full_name',
+            'verifier:id,name,full_name',
             'progressLogs.user:id,name,full_name',
         ]);
 
@@ -91,16 +92,19 @@ class RepairController extends Controller
         $equipment = Equipment::where('hospital_id', $user->hospital_id)
             ->findOrFail($data['equipment_id']);
 
+        $reportedAt = \Carbon\Carbon::parse($data['reported_at']);
+
         $ticket = RepairTicket::create([
             'hospital_id' => $user->hospital_id,
-            'ticket_no' => $this->workflow->generateTicketNumber($user->hospital_id),
+            'ticket_no'   => $this->workflow->generateTicketNumber($user->hospital_id),
             'equipment_id' => $equipment->id,
-            'location_id' => $data['location_id'] ?? $equipment->location_id,
-            'reported_at' => $data['reported_at'],
-            'reported_by' => $user->id,
-            'symptom' => $data['symptom'],
-            'urgency' => $data['urgency'],
-            'status' => RepairTicket::STATUS_PENDING,
+            'location_id'  => $data['location_id'] ?? $equipment->location_id,
+            'reported_at'  => $reportedAt,
+            'reported_by'  => $user->id,
+            'symptom'      => $data['symptom'],
+            'urgency'      => $data['urgency'],
+            'status'       => RepairTicket::STATUS_PENDING,
+            'sla_due_at'   => $this->workflow->calculateSlaDue($data['urgency'], $reportedAt),
         ]);
 
         // Initial log
@@ -130,25 +134,42 @@ class RepairController extends Controller
     {
         abort_if($ticket->hospital_id !== $request->user()->hospital_id, 404);
 
+        $user = $request->user();
         $data = $request->validated();
+        $toStatus = $data['to_status'];
+
+        // VERIFIED may be performed by the original reporter; all other transitions require admin/staff
+        if ($toStatus === RepairTicket::STATUS_VERIFIED) {
+            abort_if(
+                $ticket->reported_by !== $user->id && ! $user->hasAnyRole(['admin', 'staff']),
+                403, 'เฉพาะผู้แจ้งซ่อมหรือเจ้าหน้าที่เท่านั้น'
+            );
+        } else {
+            abort_if(! $user->hasAnyRole(['admin', 'staff']), 403, 'ไม่มีสิทธิ์');
+        }
+
         $extra = [];
-        foreach (['assigned_to', 'root_cause', 'action_taken', 'parts_used', 'repair_cost'] as $k) {
+        foreach ([
+            'assigned_to', 'root_cause', 'action_taken', 'parts_used', 'repair_cost',
+            'vendor_name', 'outsource_ref', 'expected_return_at',
+            'decommission', 'decommission_reason',
+        ] as $k) {
             if (array_key_exists($k, $data)) $extra[$k] = $data[$k];
         }
 
         $updated = $this->workflow->transition(
             $ticket,
-            $data['to_status'],
-            $request->user(),
+            $toStatus,
+            $user,
             $data['note'] ?? null,
             $extra,
         );
-        $updated->load(['equipment.department', 'location', 'reporter', 'assignee', 'progressLogs.user']);
+        $updated->load(['equipment.department', 'location', 'reporter', 'assignee', 'verifier', 'progressLogs.user']);
 
         $tplMap = [
             RepairTicket::STATUS_ACKNOWLEDGED => FlexMessageTemplate::KEY_REPAIR_ACKNOWLEDGED,
-            RepairTicket::STATUS_IN_PROGRESS => FlexMessageTemplate::KEY_REPAIR_IN_PROGRESS,
-            RepairTicket::STATUS_REPAIRED => FlexMessageTemplate::KEY_REPAIR_COMPLETED,
+            RepairTicket::STATUS_IN_PROGRESS  => FlexMessageTemplate::KEY_REPAIR_IN_PROGRESS,
+            RepairTicket::STATUS_REPAIRED     => FlexMessageTemplate::KEY_REPAIR_COMPLETED,
         ];
         if (isset($tplMap[$updated->status])) {
             app(MophAlertService::class)->notify(
@@ -160,6 +181,12 @@ class RepairController extends Controller
         }
 
         return new RepairTicketResource($updated);
+    }
+
+    public function nextOutsourceRef(Request $request): JsonResponse
+    {
+        $ref = $this->workflow->generateOutsourceRef($request->user()->hospital_id);
+        return response()->json(['ref' => $ref]);
     }
 
     public function summary(Request $request): JsonResponse

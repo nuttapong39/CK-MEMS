@@ -22,9 +22,10 @@ class DashboardController extends Controller
             ->groupBy('status')
             ->pluck('cnt', 'status');
 
-        $disposed = (int) $byStatus->get('PENDING_DISPOSAL', 0) + (int) $byStatus->get('RETIRED', 0);
-        $active = (int) $byStatus->get('ACTIVE', 0);
-        $broken = (int) $byStatus->get('BROKEN', 0) + (int) $byStatus->get('UNDER_REPAIR', 0);
+        $disposed       = (int) $byStatus->get('PENDING_DISPOSAL', 0) + (int) $byStatus->get('RETIRED', 0);
+        $active         = (int) $byStatus->get('ACTIVE', 0);
+        $broken         = (int) $byStatus->get('BROKEN', 0) + (int) $byStatus->get('UNDER_REPAIR', 0);
+        $outOfService   = (int) $byStatus->get('OUT_OF_SERVICE', 0);
 
         $calibratedCount = Calibration::where('hospital_id', $hospitalId)
             ->whereYear('calibrated_at', '>=', now()->year - 1)
@@ -52,7 +53,8 @@ class DashboardController extends Controller
                 ['key' => 'disposed', 'label' => 'จำหน่าย/รอแทงจำหน่าย', 'value' => $disposed, 'color' => 'slate'],
                 ['key' => 'calibrated', 'label' => 'สอบเทียบแล้ว (1 ปีล่าสุด)', 'value' => $calibratedCount, 'color' => 'blue'],
                 ['key' => 'due_soon', 'label' => 'ใกล้ครบสอบเทียบ (30 วัน)', 'value' => $dueSoon, 'color' => 'amber'],
-                ['key' => 'open_repairs', 'label' => 'งานซ่อมค้าง', 'value' => $openRepairs, 'color' => 'violet'],
+                ['key' => 'open_repairs',    'label' => 'งานซ่อมค้าง',        'value' => $openRepairs,  'color' => 'violet'],
+                ['key' => 'out_of_service', 'label' => 'ใช้งานไม่ได้ (ซ่อมไม่ได้)', 'value' => $outOfService, 'color' => 'red'],
             ],
         ]);
     }

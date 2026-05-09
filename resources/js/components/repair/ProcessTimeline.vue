@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { STATUS_META, COLOR_BG, STATUS_PIPELINE } from '../../composables/repairStatus';
+import { STATUS_META, COLOR_BG, STATUS_PIPELINE, STATUS_SIDE_BRANCH } from '../../composables/repairStatus';
 
 const props = defineProps({
     currentStatus: { type: String, required: true },
@@ -15,11 +15,16 @@ const reachedSet = computed(() => {
     return set;
 });
 
+// Side-branch statuses that were visited (e.g. WAITING_PARTS, OUTSOURCED)
+const activeSideBranches = computed(() =>
+    STATUS_SIDE_BRANCH.filter((s) => reachedSet.value.has(s))
+);
+
 function dotClass(status) {
     if (isCancelled.value) return 'bg-gray-300 text-gray-400 border-gray-200';
     if (props.currentStatus === status) {
         const meta = STATUS_META[status];
-        return (COLOR_BG[meta.color] ?? COLOR_BG.slate) + ' ring-4 ring-white border-2 border-white';
+        return (COLOR_BG[meta.color] ?? COLOR_BG.slate) + ' ring-4 ring-white border-2 border-white shadow-md';
     }
     if (reachedSet.value.has(status)) {
         return 'bg-emerald-500 text-white border-2 border-white';
@@ -33,30 +38,52 @@ function lineClass(idx) {
     if (after && reachedSet.value.has(after)) return 'bg-emerald-400';
     return 'bg-slate-200';
 }
+
+function sideBranchClass(status) {
+    const meta = STATUS_META[status];
+    return COLOR_BG[meta?.color] ?? COLOR_BG.slate;
+}
 </script>
 
 <template>
     <div class="space-y-4">
-        <div v-if="isCancelled" class="text-center py-3 px-4 rounded-xl bg-gray-100 text-gray-500 text-sm">
+        <div v-if="isCancelled" class="text-center py-3 px-4 rounded-xl bg-gray-100 text-gray-500 text-sm font-medium">
             ✖ การซ่อมนี้ถูกยกเลิกแล้ว
         </div>
 
-        <div v-else class="flex items-center justify-between relative">
-            <template v-for="(s, idx) in STATUS_PIPELINE" :key="s">
-                <div class="flex flex-col items-center gap-2 z-10 flex-1 min-w-0">
-                    <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-base shadow', dotClass(s)]">
-                        {{ STATUS_META[s].icon }}
+        <template v-else>
+            <!-- Main pipeline -->
+            <div class="flex items-center justify-between relative">
+                <template v-for="(s, idx) in STATUS_PIPELINE" :key="s">
+                    <div class="flex flex-col items-center gap-2 z-10 flex-1 min-w-0">
+                        <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-base shadow', dotClass(s)]">
+                            {{ STATUS_META[s].icon }}
+                        </div>
+                        <div class="text-[10px] sm:text-xs text-center text-slate-600 font-medium leading-tight px-1">
+                            {{ STATUS_META[s].label }}
+                        </div>
                     </div>
-                    <div class="text-[10px] sm:text-xs text-center text-slate-600 font-medium leading-tight px-1">
-                        {{ STATUS_META[s].label }}
-                    </div>
-                </div>
-                <div
-                    v-if="idx < STATUS_PIPELINE.length - 1"
-                    :class="['h-0.5 flex-1 -mx-1', lineClass(idx)]"
-                ></div>
-            </template>
-        </div>
+                    <div
+                        v-if="idx < STATUS_PIPELINE.length - 1"
+                        :class="['h-0.5 flex-1 -mx-1', lineClass(idx)]"
+                    ></div>
+                </template>
+            </div>
+
+            <!-- Side-branch badges (WAITING_PARTS / OUTSOURCED) -->
+            <div v-if="activeSideBranches.length" class="flex flex-wrap gap-2">
+                <span
+                    v-for="s in activeSideBranches"
+                    :key="s"
+                    :class="['inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-current/20',
+                             sideBranchClass(s),
+                             currentStatus === s ? 'ring-2 ring-offset-1 ring-current/40' : '']"
+                >
+                    {{ STATUS_META[s].icon }} {{ STATUS_META[s].label }}
+                    <span v-if="currentStatus === s" class="ml-1 text-[10px] opacity-70">(สถานะปัจจุบัน)</span>
+                </span>
+            </div>
+        </template>
 
         <!-- Detailed log -->
         <div v-if="logs.length" class="border-t border-slate-100 pt-4 mt-4 space-y-2">

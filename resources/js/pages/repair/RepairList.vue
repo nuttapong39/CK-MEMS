@@ -3,7 +3,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 import {
     PlusIcon, MagnifyingGlassIcon, ChevronLeftIcon, ChevronRightIcon,
-    EyeIcon, ArrowDownTrayIcon,
+    EyeIcon, ArrowDownTrayIcon, Cog8ToothIcon,
 } from '@heroicons/vue/24/outline';
 import { repairsApi } from '../../api/repairs';
 import { useAuthStore } from '../../stores/auth';
@@ -11,6 +11,7 @@ import StatusBadge from '../../components/repair/StatusBadge.vue';
 import { URGENCY_META } from '../../composables/repairStatus';
 
 const auth = useAuthStore();
+const canManage = computed(() => auth.hasAnyRole(['admin', 'staff']));
 const loading = ref(false);
 const items = ref([]);
 const meta = ref({ current_page: 1, last_page: 1, total: 0, per_page: 25 });
@@ -123,13 +124,15 @@ function exportCsv() {
                 </div>
                 <select v-model="filters.status" class="px-3 py-2 rounded-xl border border-slate-200 outline-none text-sm bg-white">
                     <option value="">ทุกสถานะ</option>
-                    <option value="PENDING">รอรับเรื่อง</option>
-                    <option value="ACKNOWLEDGED">รับเรื่องแล้ว</option>
-                    <option value="IN_PROGRESS">กำลังซ่อม</option>
-                    <option value="WAITING_PARTS">รออะไหล่</option>
-                    <option value="REPAIRED">ซ่อมเสร็จ</option>
-                    <option value="CLOSED">ปิดงาน</option>
-                    <option value="CANCELLED">ยกเลิก</option>
+                    <option value="PENDING">⏳ รอรับเรื่อง</option>
+                    <option value="ACKNOWLEDGED">📋 รับเรื่องแล้ว</option>
+                    <option value="IN_PROGRESS">🔧 กำลังซ่อม</option>
+                    <option value="WAITING_PARTS">📦 รออะไหล่</option>
+                    <option value="OUTSOURCED">🚚 ส่งซ่อมภายนอก</option>
+                    <option value="REPAIRED">✅ ซ่อมเสร็จ</option>
+                    <option value="VERIFIED">☑️ ตรวจรับแล้ว</option>
+                    <option value="CLOSED">📁 ปิดงาน</option>
+                    <option value="CANCELLED">✖ ยกเลิก</option>
                 </select>
                 <select v-model="filters.urgency" class="px-3 py-2 rounded-xl border border-slate-200 outline-none text-sm bg-white">
                     <option value="">ทุกระดับเร่งด่วน</option>
@@ -156,7 +159,7 @@ function exportCsv() {
                             <th class="px-5 py-3 font-semibold">เร่งด่วน</th>
                             <th class="px-5 py-3 font-semibold">สถานะ</th>
                             <th class="px-5 py-3 font-semibold">ผู้แจ้ง</th>
-                            <th class="px-5 py-3 font-semibold text-right"></th>
+                            <th class="px-5 py-3 font-semibold text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -168,11 +171,12 @@ function exportCsv() {
                                 ยังไม่มีประวัติการซ่อม
                             </td>
                         </tr>
-                        <tr v-for="t in items" :key="t.id" class="hover:bg-slate-50 transition-colors">
+                        <tr v-for="t in items" :key="t.id" :class="['hover:bg-slate-50 transition-colors', t.sla_overdue ? 'bg-red-50/40' : '']">
                             <td class="px-5 py-3">
                                 <RouterLink :to="{ name: 'repair.detail', params: { id: t.id } }" class="font-mono text-xs font-semibold text-blue-700 hover:underline">
                                     {{ t.ticket_no }}
                                 </RouterLink>
+                                <span v-if="t.sla_overdue" class="ml-1 text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">SLA</span>
                             </td>
                             <td class="px-5 py-3 text-slate-600 text-xs whitespace-nowrap">
                                 {{ new Date(t.reported_at).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) }}
@@ -190,9 +194,21 @@ function exportCsv() {
                             <td class="px-5 py-3"><StatusBadge :status="t.status" /></td>
                             <td class="px-5 py-3 text-xs text-slate-600">{{ t.reporter?.full_name }}</td>
                             <td class="px-5 py-3 text-right">
-                                <RouterLink :to="{ name: 'repair.detail', params: { id: t.id } }" class="inline-flex p-1.5 rounded-lg hover:bg-blue-50 text-blue-600">
-                                    <EyeIcon class="w-4 h-4" />
-                                </RouterLink>
+                                <div class="inline-flex items-center gap-1">
+                                    <!-- จัดการซ่อม: admin/staff + ticket ยังไม่ปิด -->
+                                    <RouterLink
+                                        v-if="canManage && !['CLOSED','CANCELLED'].includes(t.status)"
+                                        :to="{ name: 'repair.process', params: { id: t.id } }"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition"
+                                        title="จัดการซ่อม"
+                                    >
+                                        <Cog8ToothIcon class="w-3.5 h-3.5" />
+                                        จัดการ
+                                    </RouterLink>
+                                    <RouterLink :to="{ name: 'repair.detail', params: { id: t.id } }" class="inline-flex p-1.5 rounded-lg hover:bg-slate-100 text-slate-500" title="ดูรายละเอียด">
+                                        <EyeIcon class="w-4 h-4" />
+                                    </RouterLink>
+                                </div>
                             </td>
                         </tr>
                     </tbody>

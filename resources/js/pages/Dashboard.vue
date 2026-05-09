@@ -4,7 +4,8 @@ import { RouterLink } from 'vue-router';
 import {
     FingerPrintIcon, CalendarDaysIcon, BanknotesIcon,
     PencilSquareIcon, BriefcaseIcon, ClockIcon, DocumentTextIcon,
-    ChartBarIcon,
+    ChartBarIcon, CheckCircleIcon, WrenchScrewdriverIcon, ArchiveBoxXMarkIcon,
+    BeakerIcon, BellAlertIcon, ExclamationTriangleIcon, XCircleIcon,
 } from '@heroicons/vue/24/outline';
 import { useAuthStore } from '../stores/auth';
 import { masterApi } from '../api/master';
@@ -38,6 +39,19 @@ const colorMap = {
     blue: 'bg-blue-100 text-blue-600',
     amber: 'bg-amber-100 text-amber-600',
     violet: 'bg-violet-100 text-violet-600',
+    red: 'bg-red-100 text-red-600',
+    sky: 'bg-sky-100 text-sky-600',
+    teal: 'bg-teal-100 text-teal-600',
+};
+
+const cardIconMap = {
+    active:         CheckCircleIcon,
+    broken:         WrenchScrewdriverIcon,
+    disposed:       ArchiveBoxXMarkIcon,
+    calibrated:     BeakerIcon,
+    due_soon:       BellAlertIcon,
+    open_repairs:   ExclamationTriangleIcon,
+    out_of_service: XCircleIcon,
 };
 
 const shortcuts = [
@@ -102,8 +116,8 @@ const shortcuts = [
                 :key="card.key"
                 class="card-base p-5 flex items-center gap-4"
             >
-                <div :class="['w-12 h-12 rounded-xl flex items-center justify-center', colorMap[card.color] ?? colorMap.slate]">
-                    <ChartBarIcon class="w-6 h-6" />
+                <div :class="['w-12 h-12 rounded-xl flex items-center justify-center shrink-0', colorMap[card.color] ?? colorMap.slate]">
+                    <component :is="cardIconMap[card.key] ?? ChartBarIcon" class="w-6 h-6" />
                 </div>
                 <div class="min-w-0 flex-1">
                     <div class="text-xs text-slate-500 truncate">{{ card.label }}</div>

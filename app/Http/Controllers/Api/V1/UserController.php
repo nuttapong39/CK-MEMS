@@ -96,13 +96,14 @@ class UserController extends Controller
 
         $data = $request->validate([
             'employee_code' => ['nullable', 'string', 'max:64'],
-            'full_name' => ['sometimes', 'string', 'max:255'],
-            'email' => ['sometimes', 'email', Rule::unique('users', 'email')->ignore($user->id)],
-            'phone' => ['nullable', 'string', 'max:32'],
+            'full_name'     => ['sometimes', 'string', 'max:255'],
+            'name'          => ['sometimes', 'string', 'max:255', Rule::unique('users', 'name')->ignore($user->id)],
+            'email'         => ['sometimes', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone'         => ['nullable', 'string', 'max:32'],
             'department_id' => ['nullable', 'integer', 'exists:departments,id'],
-            'role' => ['sometimes', 'string', Rule::exists('roles', 'name')->where('guard_name', 'api')],
-            'is_active' => ['sometimes', 'boolean'],
-            'password' => ['sometimes', 'nullable', 'string', 'min:6'],
+            'role'          => ['sometimes', 'string', Rule::exists('roles', 'name')->where('guard_name', 'api')],
+            'is_active'     => ['sometimes', 'boolean'],
+            'password'      => ['sometimes', 'nullable', 'string', 'min:6'],
         ]);
 
         $payload = collect($data)->except(['password', 'role'])->toArray();

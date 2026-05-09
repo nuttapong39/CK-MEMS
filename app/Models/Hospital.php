@@ -13,7 +13,7 @@ class Hospital extends Model
 
     protected $fillable = [
         'code', 'name_th', 'name_en', 'province', 'district',
-        'address', 'phone', 'logo_path', 'is_active',
+        'address', 'phone', 'logo_path', 'system_name', 'theme', 'is_active',
     ];
 
     protected $casts = [

@@ -16,6 +16,13 @@ class Equipment extends Model
 
     protected $table = 'equipments';
 
+    public const STATUS_ACTIVE          = 'ACTIVE';
+    public const STATUS_BROKEN          = 'BROKEN';
+    public const STATUS_UNDER_REPAIR    = 'UNDER_REPAIR';
+    public const STATUS_RETIRED         = 'RETIRED';
+    public const STATUS_PENDING_DISPOSAL = 'PENDING_DISPOSAL';
+    public const STATUS_OUT_OF_SERVICE  = 'OUT_OF_SERVICE';
+
     protected $fillable = [
         'hospital_id', 'department_id', 'equipment_code_id',
         'location_id', 'responsible_user_id',
@@ -24,6 +31,7 @@ class Equipment extends Model
         'maintenance_cycles_per_year', 'calibration_by', 'status',
         'purchase_date', 'purchase_price', 'warranty_until',
         'note', 'qr_payload',
+        'decommissioned_at', 'decommissioned_reason',
         'created_by', 'updated_by',
     ];
 
@@ -31,6 +39,7 @@ class Equipment extends Model
         'qr_payload' => 'array',
         'purchase_date' => 'date',
         'warranty_until' => 'date',
+        'decommissioned_at' => 'datetime',
         'fiscal_year' => 'integer',
         'maintenance_cycles_per_year' => 'integer',
         'purchase_price' => 'decimal:2',
